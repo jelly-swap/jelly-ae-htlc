@@ -128,35 +128,23 @@ describe("HashTimeLock", () => {
     );
   });
 
-  // Old Stuff
+// Unsuccessful refund (expiration time hasn't passed)
+it("should revert refund, because expiration time hasn't passed yet", async () => {
+  let error;
 
-  // it("Should check if hamster has been created", async () => {
-  //   hamsterName = "C.Hamster";
-  //   await instance.createHamster(hamsterName);
+  await instance.new_contract(...Object.values(mockNewContract), {
+    amount: 1000000
+  });
 
-  //   let exists = (await instance.nameExists(hamsterName)).decodedResult;
+  try {
+    await instance.refund(id);
+  } catch (err) {
+    error = err;
+  }
+  assert(
+    error,
+    `Expected to revert, function refund executed successfully instead`
+  );
+});
 
-  //   assert.isTrue(exists, "hamster has not been created");
-  // });
-
-  // it("Should REVERT if hamster already exists", async () => {
-  //   await assert.isRejected(instance.createHamster("C.Hamster"));
-  // });
-
-  // it("Should return false if name does not exist", async () => {
-  //   hamsterName = "DoesHamsterExists";
-  //   let exists = (await instance.nameExists(hamsterName)).decodedResult;
-
-  //   assert.isOk(!exists);
-  // });
-
-  // it("Should return true if the name exists", async () => {
-  //   hamsterName = "DoesHamsterExists";
-
-  //   await instance.createHamster(hamsterName);
-
-  //   let exists = (await instance.nameExists(hamsterName)).decodedResult;
-
-  //   assert.isOk(exists);
-  // });
 });

@@ -8,7 +8,8 @@ const {
   ACTIVE,
   WITHDRAWN,
   REFUNDED,
-  EXPIRED
+  EXPIRED,
+  SECONDS_IN_ONE_MINUTE
 } = require("./constants.js");
 const { id, secret, invalidSecret, mockNewContract } = require("./mockData.js");
 
@@ -40,24 +41,34 @@ describe("HashTimeLock", () => {
   //     ...Object.values(mockNewContract),
   //     { amount: 1000000 }
   //   );
-
-  //   txHash = newContract.hash;
   //   assert(newContract, `Expected new contract object, got ${newContract} instead`);
   // });
 
   // Get one status
-  it("should get one status", async () => {
-   await instance.new_contract(
-      ...Object.values(mockNewContract),
-      { amount: 1000000 }
-    );
+  // it("should get one status", async () => {
+  //  await instance.new_contract(
+  //     ...Object.values(mockNewContract),
+  //     { amount: 1000000 }
+  //   );
+
+  //   const getOneStatus = await instance.get_one_status(id);
+  //   const status = getOneStatus.decodedResult;
+  //   assert(
+  //     status === ACTIVE,
+  //     `Expected ACTIVE, got ${status} instead`
+  //   );
+  // });
+
+  it("should withdraw", async () => {
+    await instance.new_contract(...Object.values(mockNewContract), {
+      amount: 1000000
+    });
+
+    await instance.withdraw(id, secret);
 
     const getOneStatus = await instance.get_one_status(id);
     const status = getOneStatus.decodedResult;
-    assert(
-      status === ACTIVE,
-      `Expected ACTIVE, got ${status} instead`
-    );
+    assert(status === WITHDRAWN, `Expected WITHDRAWN, got ${status} instead`);
   });
 
   // Old Stuff

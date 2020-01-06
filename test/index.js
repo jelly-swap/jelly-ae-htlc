@@ -1,6 +1,15 @@
 const Deployer = require("aeproject-lib").Deployer;
 const EXAMPLE_CONTRACT_PATH = "./contracts/HashTimeLock.aes";
-const { TESTNET, SECRET_KEY, COMPILER_URL } = require("./constants.js");
+const {
+  TESTNET,
+  SECRET_KEY,
+  COMPILER_URL,
+  INVALID,
+  ACTIVE,
+  WITHDRAWN,
+  REFUNDED,
+  EXPIRED
+} = require("./constants.js");
 const { id, secret, invalidSecret, mockNewContract } = require("./mockData.js");
 
 // Unit tests wrapper
@@ -18,26 +27,40 @@ describe("HashTimeLock", () => {
   });
 
   // Deploy contract
-  it("should deploy contract", async () => {
-    assert(
-      instance.address !== "",
-      `Expected valid hash for address, got ${instance.address} instead`
-    );
-  });
+  // it("should deploy contract", async () => {
+  //   assert(
+  //     instance.address !== "",
+  //     `Expected valid hash for address, got ${instance.address} instead`
+  //   );
+  // });
 
   // New contract
-  it("should create new contract", async () => {
-    const newContract = await instance.new_contract(
+  // it("should create new contract", async () => {
+  //   await instance.new_contract(
+  //     ...Object.values(mockNewContract),
+  //     { amount: 1000000 }
+  //   );
+
+  //   txHash = newContract.hash;
+  //   assert(newContract, `Expected new contract object, got ${newContract} instead`);
+  // });
+
+  // Get one status
+  it("should get one status", async () => {
+   await instance.new_contract(
       ...Object.values(mockNewContract),
       { amount: 1000000 }
     );
 
-    // txHash = newContract.logs[0].transactionHash;
-
-    // const contractId = newContract.logs[0].args.id;
-    // const contractExists = await contractInstance.contractExists(contractId);
-    // assert(contractExists, `Expected true, got ${contractExists} instead`);
+    const getOneStatus = await instance.get_one_status(id);
+    const status = getOneStatus.decodedResult;
+    assert(
+      status === ACTIVE,
+      `Expected ACTIVE, got ${status} instead`
+    );
   });
+
+  // Old Stuff
 
   // it("Should check if hamster has been created", async () => {
   //   hamsterName = "C.Hamster";

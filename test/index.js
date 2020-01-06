@@ -66,34 +66,35 @@ describe("HashTimeLock", () => {
   //   );
   // });
 
-  it("should revert new_contract, because expiration is invalid", async () => {
-    let error;
-    const {
-      outputAmount,
-      hashLock,
-      receiverAddress,
-      outputNetwork,
-      outputAddress
-    } = mockNewContract;
+  // Unsuccessful new_contract (invalid expiration time)
+  // it("should revert new_contract, because expiration is invalid", async () => {
+  //   let error;
+  //   const {
+  //     outputAmount,
+  //     hashLock,
+  //     receiverAddress,
+  //     outputNetwork,
+  //     outputAddress
+  //   } = mockNewContract;
 
-    try {
-      await instance.new_contract(
-        outputAmount,
-        invalidTimestamp,
-        hashLock,
-        receiverAddress,
-        outputNetwork,
-        outputAddress,
-        { value: 1 }
-      );
-    } catch (err) {
-      error = err;
-    }
-    assert(
-      error,
-      `Expected to revert, function new_contract executed successfully instead`
-    );
-  });
+  //   try {
+  //     await instance.new_contract(
+  //       outputAmount,
+  //       invalidTimestamp,
+  //       hashLock,
+  //       receiverAddress,
+  //       outputNetwork,
+  //       outputAddress,
+  //       { value: 1 }
+  //     );
+  //   } catch (err) {
+  //     error = err;
+  //   }
+  //   assert(
+  //     error,
+  //     `Expected to revert, function new_contract executed successfully instead`
+  //   );
+  // });
 
   // Successful withdraw
   // it("should withdraw", async () => {
@@ -107,6 +108,25 @@ describe("HashTimeLock", () => {
   //   const status = getOneStatus.decodedResult;
   //   assert(status === WITHDRAWN, `Expected WITHDRAWN, got ${status} instead`);
   // });
+
+  // Unsuccessful withdraw (invalid secret)
+  it("should revert withdraw, because secret is invalid", async () => {
+    let error;
+
+    await instance.new_contract(...Object.values(mockNewContract), {
+      amount: 1000000
+    });
+
+    try {
+      await instance.withdraw(id, invalidSecret);
+    } catch (err) {
+      error = err;
+    }
+    assert(
+      error,
+      `Expected to revert, function withdraw executed successfully instead`
+    );
+  });
 
   // Old Stuff
 

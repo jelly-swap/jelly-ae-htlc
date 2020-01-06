@@ -1,5 +1,6 @@
 const Deployer = require("aeproject-lib").Deployer;
 const EXAMPLE_CONTRACT_PATH = "./contracts/HashTimeLock.aes";
+
 const {
   TESTNET,
   SECRET_KEY,
@@ -11,7 +12,13 @@ const {
   EXPIRED,
   SECONDS_IN_ONE_MINUTE
 } = require("./constants.js");
-const { id, secret, invalidSecret, mockNewContract } = require("./mockData.js");
+const {
+  id,
+  secret,
+  invalidSecret,
+  mockNewContract,
+  invalidTimestamp
+} = require("./mockData.js");
 
 // Unit tests wrapper
 describe("HashTimeLock", () => {
@@ -59,17 +66,47 @@ describe("HashTimeLock", () => {
   //   );
   // });
 
-  it("should withdraw", async () => {
-    await instance.new_contract(...Object.values(mockNewContract), {
-      amount: 1000000
-    });
+  it("should revert new_contract, because expiration is invalid", async () => {
+    let error;
+    const {
+      outputAmount,
+      hashLock,
+      receiverAddress,
+      outputNetwork,
+      outputAddress
+    } = mockNewContract;
 
-    await instance.withdraw(id, secret);
-
-    const getOneStatus = await instance.get_one_status(id);
-    const status = getOneStatus.decodedResult;
-    assert(status === WITHDRAWN, `Expected WITHDRAWN, got ${status} instead`);
+    try {
+      await instance.new_contract(
+        outputAmount,
+        invalidTimestamp,
+        hashLock,
+        receiverAddress,
+        outputNetwork,
+        outputAddress,
+        { value: 1 }
+      );
+    } catch (err) {
+      error = err;
+    }
+    assert(
+      error,
+      `Expected to revert, function new_contract executed successfully instead`
+    );
   });
+
+  // Successful withdraw
+  // it("should withdraw", async () => {
+  //   await instance.new_contract(...Object.values(mockNewContract), {
+  //     amount: 1000000
+  //   });
+
+  //   await instance.withdraw(id, secret);
+
+  //   const getOneStatus = await instance.get_one_status(id);
+  //   const status = getOneStatus.decodedResult;
+  //   assert(status === WITHDRAWN, `Expected WITHDRAWN, got ${status} instead`);
+  // });
 
   // Old Stuff
 

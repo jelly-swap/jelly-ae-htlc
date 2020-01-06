@@ -6,6 +6,7 @@ const mockData = {
   secret: "3853485acd2bfc3c632026ee365279743af107a30492e3ceaa7aefc30c2a048a",
   invalidSecret:
     "0x2240404393f4dd5d8757eeb71447c8c675b57ddb2e20edcfc8f6f13857f35a15",
+  invalidTimestamp: "1578316539",
 
   mockNewContract: {
     outputAmount: 5939679548,

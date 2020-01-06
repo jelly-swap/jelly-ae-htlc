@@ -1,9 +1,10 @@
 const Deployer = require("aeproject-lib").Deployer;
-const EXAMPLE_CONTRACT_PATH = "./contracts/ExampleContract.aes";
+const EXAMPLE_CONTRACT_PATH = "./contracts/HashTimeLock.aes";
 const { TESTNET, SECRET_KEY, COMPILER_URL } = require("./constants.js");
+const { id, secret, invalidSecret, mockNewContract } = require("./mockData.js");
 
 // Unit tests wrapper
-describe("Example Contract", () => {
+describe("HashTimeLock", () => {
   let deployer;
   let instance;
 
@@ -24,11 +25,19 @@ describe("Example Contract", () => {
     );
   });
 
-  // Contract exists
-  // it("should return error, because contract doesn't exist yet", async () => {
-  //   const contractExists = await instance.contractExists(id);
-  //   assert(!contractExists, `Expected false, got ${contractExists} instead`);
-  // });
+  // New contract
+  it("should create new contract", async () => {
+    const newContract = await instance.new_contract(
+      ...Object.values(mockNewContract),
+      { amount: 1000000 }
+    );
+
+    // txHash = newContract.logs[0].transactionHash;
+
+    // const contractId = newContract.logs[0].args.id;
+    // const contractExists = await contractInstance.contractExists(contractId);
+    // assert(contractExists, `Expected true, got ${contractExists} instead`);
+  });
 
   // it("Should check if hamster has been created", async () => {
   //   hamsterName = "C.Hamster";

@@ -35,79 +35,79 @@ describe("HashTimeLock", () => {
   });
 
   // Deploy contract
-  // it("should deploy contract", async () => {
-  //   assert(
-  //     instance.address !== "",
-  //     `Expected valid hash for address, got ${instance.address} instead`
-  //   );
-  // });
+  it("should deploy contract", async () => {
+    assert(
+      instance.address !== "",
+      `Expected valid hash for address, got ${instance.address} instead`
+    );
+  });
 
   // New contract
-  // it("should create new contract", async () => {
-  //   await instance.new_contract(
-  //     ...Object.values(mockNewContract),
-  //     { amount: 1000000 }
-  //   );
-  //   assert(newContract, `Expected new contract object, got ${newContract} instead`);
-  // });
+  it("should create new contract", async () => {
+    const newContract = await instance.new_contract(
+      ...Object.values(mockNewContract),
+      { amount: 1000000 }
+    );
+    assert(newContract, `Expected new contract object, got ${newContract} instead`);
+  });
 
   // Get one status
-  // it("should get one status", async () => {
-  //  await instance.new_contract(
-  //     ...Object.values(mockNewContract),
-  //     { amount: 1000000 }
-  //   );
+  it("should get one status", async () => {
+   await instance.new_contract(
+      ...Object.values(mockNewContract),
+      { amount: 1000000 }
+    );
 
-  //   const getOneStatus = await instance.get_one_status(id);
-  //   const status = getOneStatus.decodedResult;
-  //   assert(
-  //     status === ACTIVE,
-  //     `Expected ACTIVE, got ${status} instead`
-  //   );
-  // });
+    const getOneStatus = await instance.get_one_status(id);
+    const status = getOneStatus.decodedResult;
+    assert(
+      status === ACTIVE,
+      `Expected ACTIVE, got ${status} instead`
+    );
+  });
 
   // Unsuccessful new_contract (invalid expiration time)
-  // it("should revert new_contract, because expiration is invalid", async () => {
-  //   let error;
-  //   const {
-  //     outputAmount,
-  //     hashLock,
-  //     receiverAddress,
-  //     outputNetwork,
-  //     outputAddress
-  //   } = mockNewContract;
+  it("should revert new_contract, because expiration is invalid", async () => {
+    let error;
+    const {
+      outputAmount,
+      hashLock,
+      receiverAddress,
+      outputNetwork,
+      outputAddress
+    } = mockNewContract;
 
-  //   try {
-  //     await instance.new_contract(
-  //       outputAmount,
-  //       invalidTimestamp,
-  //       hashLock,
-  //       receiverAddress,
-  //       outputNetwork,
-  //       outputAddress,
-  //       { value: 1 }
-  //     );
-  //   } catch (err) {
-  //     error = err;
-  //   }
-  //   assert(
-  //     error,
-  //     `Expected to revert, function new_contract executed successfully instead`
-  //   );
-  // });
+    try {
+      await instance.new_contract(
+        outputAmount,
+        invalidTimestamp,
+        hashLock,
+        receiverAddress,
+        outputNetwork,
+        outputAddress,
+        { value: 1 }
+      );
+    } catch (err) {
+      error = err;
+    }
+    assert(
+      error,
+      `Expected to revert, function new_contract executed successfully instead`
+    );
+  });
 
   // Successful withdraw
-  // it("should withdraw", async () => {
-  //   await instance.new_contract(...Object.values(mockNewContract), {
-  //     amount: 1000000
-  //   });
+  it("should withdraw", async () => {
+    await instance.new_contract(...Object.values(mockNewContract), {
+      amount: 1000000
+    });
 
-  //   await instance.withdraw(id, secret);
+    await instance.withdraw(id, secret);
 
-  //   const getOneStatus = await instance.get_one_status(id);
-  //   const status = getOneStatus.decodedResult;
-  //   assert(status === WITHDRAWN, `Expected WITHDRAWN, got ${status} instead`);
-  // });
+    const getOneStatus = await instance.get_one_status(id);
+    const status = getOneStatus.decodedResult;
+    assert(status === WITHDRAWN, `Expected WITHDRAWN, got ${status} instead`);
+  });
 
   // Unsuccessful withdraw (invalid secret)
   it("should revert withdraw, because secret is invalid", async () => {

@@ -1,5 +1,3 @@
-const { MAXIMUM_UNIX_TIMESTAMP } = require("./constants.js");
-
 // Example mock data
 const mockData = {
   id: "f43f26b534f581f46b5a0bd59b6dadf8223719baa9ee03459e31ac9270c49d01",

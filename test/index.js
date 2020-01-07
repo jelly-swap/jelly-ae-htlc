@@ -6,12 +6,9 @@ const {
   TESTNET,
   SECRET_KEY,
   COMPILER_URL,
-  INVALID,
   ACTIVE,
   WITHDRAWN,
   REFUNDED,
-  EXPIRED,
-  SECONDS_IN_ONE_MINUTE
 } = require("./constants.js");
 const {
   id,
@@ -21,6 +18,7 @@ const {
   invalidTimestamp
 } = require("./mockData.js");
 const { timeout } = require("./helpers");
+
 // Unit tests wrapper
 describe("HashTimeLock", () => {
   let deployer;
@@ -35,117 +33,117 @@ describe("HashTimeLock", () => {
     instance = await Promise.resolve(deployedPromise);
   });
 
-  // // Deploy contract
-  // it("should deploy contract", async () => {
-  //   assert(
-  //     instance.address !== "",
-  //     `Expected valid hash for address, got ${instance.address} instead`
-  //   );
-  // });
+  // Deploy contract
+  it("should deploy contract", async () => {
+    assert(
+      instance.address !== "",
+      `Expected valid hash for address, got ${instance.address} instead`
+    );
+  });
 
-  // // New contract
-  // it("should create new contract", async () => {
-  //   const newContract = await instance.new_contract(
-  //     ...Object.values(mockNewContract),
-  //     { amount: 1000000 }
-  //   );
-  //   assert(
-  //     newContract,
-  //     `Expected new contract object, got ${newContract} instead`
-  //   );
-  // });
+  // New contract
+  it("should create new contract", async () => {
+    const newContract = await instance.new_contract(
+      ...Object.values(mockNewContract),
+      { amount: 1000000 }
+    );
+    assert(
+      newContract,
+      `Expected new contract object, got ${newContract} instead`
+    );
+  });
 
-  // // Get one status
-  // it("should get one status", async () => {
-  //   await instance.new_contract(...Object.values(mockNewContract), {
-  //     amount: 1000000
-  //   });
+  // Get one status
+  it("should get one status", async () => {
+    await instance.new_contract(...Object.values(mockNewContract), {
+      amount: 1000000
+    });
 
-  //   const getOneStatus = await instance.get_one_status(id);
-  //   const status = getOneStatus.decodedResult;
-  //   assert(status === ACTIVE, `Expected ACTIVE, got ${status} instead`);
-  // });
+    const getOneStatus = await instance.get_one_status(id);
+    const status = getOneStatus.decodedResult;
+    assert(status === ACTIVE, `Expected ACTIVE, got ${status} instead`);
+  });
 
-  // // Unsuccessful new_contract (invalid expiration time)
-  // it("should revert new_contract, because expiration is invalid", async () => {
-  //   let error;
-  //   const {
-  //     outputAmount,
-  //     hashLock,
-  //     receiverAddress,
-  //     outputNetwork,
-  //     outputAddress
-  //   } = mockNewContract;
+  // Unsuccessful new_contract (invalid expiration time)
+  it("should revert new_contract, because expiration is invalid", async () => {
+    let error;
+    const {
+      outputAmount,
+      hashLock,
+      receiverAddress,
+      outputNetwork,
+      outputAddress
+    } = mockNewContract;
 
-  //   try {
-  //     await instance.new_contract(
-  //       outputAmount,
-  //       invalidTimestamp,
-  //       hashLock,
-  //       receiverAddress,
-  //       outputNetwork,
-  //       outputAddress,
-  //       { amount: 1000000 }
-  //     );
-  //   } catch (err) {
-  //     error = err;
-  //   }
-  //   assert(
-  //     error,
-  //     `Expected to revert, function new_contract executed successfully instead`
-  //   );
-  // });
+    try {
+      await instance.new_contract(
+        outputAmount,
+        invalidTimestamp,
+        hashLock,
+        receiverAddress,
+        outputNetwork,
+        outputAddress,
+        { amount: 1000000 }
+      );
+    } catch (err) {
+      error = err;
+    }
+    assert(
+      error,
+      `Expected to revert, function new_contract executed successfully instead`
+    );
+  });
 
-  // // Successful withdraw
-  // it("should withdraw", async () => {
-  //   await instance.new_contract(...Object.values(mockNewContract), {
-  //     amount: 1000000
-  //   });
+  // Successful withdraw
+  it("should withdraw", async () => {
+    await instance.new_contract(...Object.values(mockNewContract), {
+      amount: 1000000
+    });
 
-  //   await instance.withdraw(id, secret);
+    await instance.withdraw(id, secret);
 
-  //   const getOneStatus = await instance.get_one_status(id);
-  //   const status = getOneStatus.decodedResult;
-  //   assert(status === WITHDRAWN, `Expected WITHDRAWN, got ${status} instead`);
-  // });
+    const getOneStatus = await instance.get_one_status(id);
+    const status = getOneStatus.decodedResult;
+    assert(status === WITHDRAWN, `Expected WITHDRAWN, got ${status} instead`);
+  });
 
-  // // Unsuccessful withdraw (invalid secret)
-  // it("should revert withdraw, because secret is invalid", async () => {
-  //   let error;
+  // Unsuccessful withdraw (invalid secret)
+  it("should revert withdraw, because secret is invalid", async () => {
+    let error;
 
-  //   await instance.new_contract(...Object.values(mockNewContract), {
-  //     amount: 1000000
-  //   });
+    await instance.new_contract(...Object.values(mockNewContract), {
+      amount: 1000000
+    });
 
-  //   try {
-  //     await instance.withdraw(id, invalidSecret);
-  //   } catch (err) {
-  //     error = err;
-  //   }
-  //   assert(
-  //     error,
-  //     `Expected to revert, function withdraw executed successfully instead`
-  //   );
-  // });
+    try {
+      await instance.withdraw(id, invalidSecret);
+    } catch (err) {
+      error = err;
+    }
+    assert(
+      error,
+      `Expected to revert, function withdraw executed successfully instead`
+    );
+  });
 
-  // // Unsuccessful refund (expiration time hasn't passed)
-  // it("should revert refund, because expiration time hasn't passed yet", async () => {
-  //   let error;
+  // Unsuccessful refund (expiration time hasn't passed)
+  it("should revert refund, because expiration time hasn't passed yet", async () => {
+    let error;
 
-  //   await instance.new_contract(...Object.values(mockNewContract), {
-  //     amount: 1000000
-  //   });
+    await instance.new_contract(...Object.values(mockNewContract), {
+      amount: 1000000
+    });
 
-  //   try {
-  //     await instance.refund(id);
-  //   } catch (err) {
-  //     error = err;
-  //   }
-  //   assert(
-  //     error,
-  //     `Expected to revert, function refund executed successfully instead`
-  //   );
-  // });
+    try {
+      await instance.refund(id);
+    } catch (err) {
+      error = err;
+    }
+    assert(
+      error,
+      `Expected to revert, function refund executed successfully instead`
+    );
+  });
 });
 
 // Mock unit tests wrapper
@@ -162,36 +160,36 @@ describe("MockHTL", () => {
     instance = await Promise.resolve(deployedPromise);
   });
 
-  // // Successful refund
-  // it("should refund", async () => {
-  //   const res = await instance.get_timestamp();
-  //   const timestamp = res.decodedResult;
+  // Successful refund
+  it("should refund", async () => {
+    const res = await instance.get_timestamp();
+    const timestamp = res.decodedResult;
 
-  //   const {
-  //     outputAmount,
-  //     hashLock,
-  //     receiverAddress,
-  //     outputNetwork,
-  //     outputAddress
-  //   } = mockNewContract;
-  //   const newContract = await instance.new_contract(
-  //     outputAmount,
-  //     timestamp + 10000,
-  //     hashLock,
-  //     receiverAddress,
-  //     outputNetwork,
-  //     outputAddress,
-  //     { amount: 1000000 }
-  //   );
+    const {
+      outputAmount,
+      hashLock,
+      receiverAddress,
+      outputNetwork,
+      outputAddress
+    } = mockNewContract;
+    const newContract = await instance.new_contract(
+      outputAmount,
+      timestamp + 10000,
+      hashLock,
+      receiverAddress,
+      outputNetwork,
+      outputAddress,
+      { amount: 1000000 }
+    );
 
-  //   const contractId = newContract.decodedResult.id;
+    const contractId = newContract.decodedResult.id;
 
-  //   await timeout(10000);
-  //   await instance.refund(contractId);
-  //   const getOneStatus = await instance.get_one_status(contractId);
-  //   const status = getOneStatus.decodedResult;
-  //   assert(status === REFUNDED, `Expected REFUNDED, got ${status} instead`);
-  // });
+    await timeout(10000);
+    await instance.refund(contractId);
+    const getOneStatus = await instance.get_one_status(contractId);
+    const status = getOneStatus.decodedResult;
+    assert(status === REFUNDED, `Expected REFUNDED, got ${status} instead`);
+  });
 
   // Unsuccessful withdraw (expiration time passed)
   it("should revert withdraw, because expiration time has passed", async () => {

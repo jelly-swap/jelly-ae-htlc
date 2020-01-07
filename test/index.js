@@ -162,8 +162,39 @@ describe("MockHTL", () => {
     instance = await Promise.resolve(deployedPromise);
   });
 
-  // Successful refund
-  it("should refund", async () => {
+  // // Successful refund
+  // it("should refund", async () => {
+  //   const res = await instance.get_timestamp();
+  //   const timestamp = res.decodedResult;
+
+  //   const {
+  //     outputAmount,
+  //     hashLock,
+  //     receiverAddress,
+  //     outputNetwork,
+  //     outputAddress
+  //   } = mockNewContract;
+  //   const newContract = await instance.new_contract(
+  //     outputAmount,
+  //     timestamp + 10000,
+  //     hashLock,
+  //     receiverAddress,
+  //     outputNetwork,
+  //     outputAddress,
+  //     { amount: 1000000 }
+  //   );
+
+  //   const contractId = newContract.decodedResult.id;
+
+  //   await timeout(10000);
+  //   await instance.refund(contractId);
+  //   const getOneStatus = await instance.get_one_status(contractId);
+  //   const status = getOneStatus.decodedResult;
+  //   assert(status === REFUNDED, `Expected REFUNDED, got ${status} instead`);
+  // });
+
+  // Unsuccessful withdraw (expiration time passed)
+  it("should revert withdraw, because expiration time has passed", async () => {
     const res = await instance.get_timestamp();
     const timestamp = res.decodedResult;
 
@@ -174,7 +205,8 @@ describe("MockHTL", () => {
       outputNetwork,
       outputAddress
     } = mockNewContract;
-    const nc = await instance.new_contract(
+
+    const newContract = await instance.new_contract(
       outputAmount,
       timestamp + 10000,
       hashLock,
@@ -184,12 +216,18 @@ describe("MockHTL", () => {
       { amount: 1000000 }
     );
 
-    const contractId = nc.decodedResult.id;
+    const contractId = newContract.decodedResult.id;
 
     await timeout(10000);
-    await instance.refund(contractId);
-    const getOneStatus = await instance.get_one_status(contractId);
-    const status = getOneStatus.decodedResult;
-    assert(status === REFUNDED, `Expected REFUNDED, got ${status} instead`);
+
+    try {
+      await instance.withdraw(contractId, secret);
+    } catch (err) {
+      error = err;
+    }
+    assert(
+      error,
+      `Expected to revert, function withdraw executed successfully instead`
+    );
   });
 });

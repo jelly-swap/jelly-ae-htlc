@@ -38,7 +38,7 @@ contract HashTimeLock =
       hash_lock : hash, 
       receiver : address, 
       output_network : string, 
-      output_address : string) : hash =
+      output_address : string) : lock_contract =
     
     let sender : address = Call.caller
     
@@ -67,7 +67,6 @@ contract HashTimeLock =
     Chain.event(New_contract(id, sender, receiver, swap_message))
     
     state.contracts[id]
-    id
 
   public stateful entrypoint withdraw(id : hash, secret : hash) =
     let _contract: lock_contract = state.contracts[id]
@@ -125,3 +124,4 @@ contract HashTimeLock =
     String.concat(String.concat(a, ","),b)
 
   public entrypoint  init() = { contracts = {} }
+  

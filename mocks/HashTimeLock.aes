@@ -7,6 +7,7 @@ contract HashTimeLock =
   datatype status = INVALID | ACTIVE | REFUNDED | WITHDRAWN | EXPIRED 
 
   record lock_contract = {
+    id : hash,
     input_amount : int,
     output_amount : int,
     expiration : int,
@@ -47,6 +48,7 @@ contract HashTimeLock =
     let id : hash = generate_id(sender, receiver, input_amount, hash_lock, expiration)
     
     let new_contract : lock_contract = { 
+      id = id,
       input_amount = input_amount,
       output_amount = output_amount,
       expiration = expiration,
@@ -123,5 +125,7 @@ contract HashTimeLock =
   entrypoint concat(a : string, b : string) =
     String.concat(String.concat(a, ","),b)
 
+  entrypoint get_timestamp() : int =
+    Chain.timestamp
+
   public entrypoint  init() = { contracts = {} }
-  

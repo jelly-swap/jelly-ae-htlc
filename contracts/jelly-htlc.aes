@@ -1,0 +1,147 @@
+@compiler >= 4
+include "List.aes"
+
+contract JellyHTLC = 
+
+  record state = { swaps : map(hash, swap) }
+
+  datatype status = INVALID | ACTIVE | REFUNDED | WITHDRAWN | EXPIRED 
+
+  record swap = {
+    input_amount : int,
+    output_amount : int,
+    expiration : int,
+    hash_lock : hash,
+    status: status,
+    sender : address,
+    receiver : address,
+    output_network : string,
+    output_address : string}
+
+  datatype event =
+    Withdraw(hash, address, address, string)
+    | Refund(hash, address, address, string)
+    | NewSwap(hash, address, address, string)
+
+  payable stateful entrypoint new_swap(
+      output_amount : int,
+      expiration : int, 
+      hash_lock : hash, 
+      receiver : address, 
+      output_network : string, 
+      output_address : string) =
+    
+    let sender : address = Call.caller
+    
+    let input_amount : int = Call.value
+    
+    let id : hash = generate_id(sender, receiver, input_amount, hash_lock, expiration)
+    
+    require(!swap_exists(id), "SWAP_ALREADY_EXISTS")
+
+    let _swap : swap = { 
+      input_amount = input_amount,
+      output_amount = output_amount,
+      expiration = expiration,
+      hash_lock = hash_lock,
+      status = ACTIVE,
+      sender = sender,
+      receiver = receiver,
+      output_network = output_network,
+      output_address = output_address }
+
+    require(expiration > Chain.timestamp, "INVALID_TIME")
+    require(input_amount > 0, "INVALID_AMOUNT")
+
+    put(state{ swaps[id] = _swap })
+
+    let swap_message : string = generate_swap_message(_swap)
+    
+    Chain.event(NewSwap(id, sender, receiver, swap_message))
+    
+  stateful entrypoint withdraw(id : hash, secret : hash) =
+    let _swap : swap = state.swaps[id]
+
+    withdrawable(_swap, secret)
+
+    Chain.spend(_swap.receiver, _swap.input_amount)
+
+    put(state{swaps[id].status = WITHDRAWN})
+
+    Chain.event(Withdraw(id, _swap.sender, _swap.receiver, generate_withdraw_message(secret, _swap.hash_lock) ))
+
+  stateful entrypoint refund(id : hash) =
+    let _swap : swap = state.swaps[id]
+
+    refundable(_swap)
+    
+    Chain.spend(_swap.sender, _swap.input_amount)
+
+    put(state{ swaps[id].status = REFUNDED })
+
+    Chain.event(Refund(id, _swap.sender, _swap.receiver, Bytes.to_str(_swap.hash_lock)))
+
+  entrypoint get_one_status(id : hash) : status =
+    let _swap : swap = state.swaps[id]
+
+    if(_swap.status == ACTIVE &&
+        _swap.expiration < Chain.timestamp)
+      EXPIRED
+    else
+      _swap.status
+
+  entrypoint get_many_status(ids : list(hash)) : list(status) =
+    List.map((id) => get_one_status(id), ids)
+
+  entrypoint generate_id(sender : address, receiver : address,
+   input_amount : int, hash_lock : hash, expiration : int) : hash =
+    let packed_string : string = 
+     cc([
+       Address.to_str(sender),
+       Address.to_str(receiver),
+       Int.to_str(input_amount),
+       Bytes.to_str(hash_lock),
+       Int.to_str(expiration)])
+    
+    Crypto.sha256(packed_string)
+
+  entrypoint get_swap(id : hash) : swap =
+    require(swap_exists(id), "SWAP_NOT_FOUND")
+    state.swaps[id]
+
+  function withdrawable(_swap : swap, secret : hash) =
+    require(is_active(_swap.status), "SWAP_NOT_ACTIVE")
+    require(_swap.expiration > Chain.timestamp, "INVALID_TIME")
+    require(_swap.hash_lock == Crypto.sha256(secret), "INVALID_SECRET")
+
+  function refundable(_swap: swap) =
+    require(is_active(_swap.status), "SWAP_NOT_ACTIVE")
+    require(Chain.timestamp >= _swap.expiration, "INVALID_TIME")
+    require(_swap.sender == Call.caller, "INVALID_SENDER")
+
+  function generate_withdraw_message(secret : hash, hash_lock : hash) : string =
+    concat([Bytes.to_str(secret), Bytes.to_str(hash_lock)])
+
+  function generate_swap_message(swap : swap) : string =
+    concat([
+      swap.output_network,
+      swap.output_address,
+      Int.to_str(swap.input_amount),
+      Int.to_str(swap.output_amount),
+      Int.to_str(swap.expiration),
+      Bytes.to_str(swap.hash_lock)])
+  
+  function is_active(x : status) : bool =
+    x == ACTIVE
+
+  function swap_exists(id : hash) : bool =
+    Map.member(id, state.swaps)
+
+  function cc(ss : list(string)) : string =
+   switch(ss)
+    s :: ss => List.foldl(String.concat, s, ss)
+
+  function concat(ss : list(string)) : string =
+   cc(List.intersperse(",", ss))
+
+  entrypoint init() = { swaps = {} }
